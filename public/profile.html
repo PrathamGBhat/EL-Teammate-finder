@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>My Profile — TeamFinder</title>
+<link rel="stylesheet" href="/css/style.css" />
+</head>
+<body>
+<main>
+  <h1 id="name">—</h1>
+  <p class="sub" id="sub">—</p>
+
+  <div class="card row">
+    <div>
+      <label style="margin-bottom:2px;">Connections</label>
+      <div style="font-size:22px;font-weight:700;" id="connCount">0</div>
+    </div>
+    <div>
+      <label style="margin-bottom:2px;">Active advertisements</label>
+      <div style="font-size:22px;font-weight:700;" id="adCount">0</div>
+    </div>
+    <div>
+      <label style="margin-bottom:2px;">Teams you lead</label>
+      <div style="font-size:22px;font-weight:700;" id="teamCount">0</div>
+    </div>
+  </div>
+
+  <h2>My advertisements</h2>
+  <p class="sub" style="margin-top:-8px;">Requirements you've referenced under your profile, visible to your connections.</p>
+  <div id="adsList"></div>
+
+  <p class="sub">Manage these on the <a href="/team.html" style="color:var(--accent)">Teams & Advertising</a> page.</p>
+</main>
+
+<script src="/js/common.js"></script>
+<script src="/js/profile.js"></script>
+</body>
+</html>

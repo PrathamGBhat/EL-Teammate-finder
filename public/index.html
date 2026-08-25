@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>TeamFinder — Login</title>
+<link rel="stylesheet" href="/css/style.css" />
+</head>
+<body>
+  <div class="login-wrap">
+    <h1>🎓 TeamFinder</h1>
+    <p class="sub">Find EL teammates through people you already know.</p>
+
+    <div class="card">
+      <label for="usn">Your USN</label>
+      <input id="usn" placeholder="e.g. 1RV23CS001" autocomplete="username" />
+
+      <label for="password">Password</label>
+      <input id="password" type="password" placeholder="••••••••" autocomplete="current-password" />
+
+      <div id="newUserFields" style="display:none;">
+        <p class="sub" style="margin-top:-6px;">We don't recognize this USN yet — create an account.</p>
+        <label for="name">Name</label>
+        <input id="name" placeholder="e.g. Alice" />
+        <label for="branch">Branch</label>
+        <input id="branch" placeholder="e.g. CSE" />
+      </div>
+
+      <div id="msg" class="error-msg" style="display:none;"></div>
+
+      <button id="loginBtn">Continue</button>
+    </div>
+
+    <p class="sub">Demo accounts (seeded): <span class="usn">1RV23CS001</span> (Alice), <span class="usn">1RV23EC010</span> (Bob) — password for both: <code>password123</code></p>
+  </div>
+
+<script src="/js/common.js"></script>
+<script src="/js/login.js"></script>
+</body>
+</html>

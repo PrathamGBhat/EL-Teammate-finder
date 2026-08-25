@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Connections — TeamFinder</title>
+<link rel="stylesheet" href="/css/style.css" />
+</head>
+<body>
+<main>
+  <h1>Connections</h1>
+  <p class="sub">Connect with people you know. Discovery only searches through accepted connections.</p>
+
+  <div class="card">
+    <label for="searchUsn">Connect with a USN</label>
+    <input id="searchUsn" placeholder="Type a USN, e.g. 1RV23EC010" autocomplete="off" />
+    <div id="searchResults"></div>
+    <div id="connectMsg"></div>
+  </div>
+
+  <h2>Pending requests for you</h2>
+  <div id="requestsList"></div>
+
+  <h2>My connections</h2>
+  <div id="connectionsList"></div>
+</main>
+
+<script src="/js/common.js"></script>
+<script src="/js/connections.js"></script>
+</body>
+</html>

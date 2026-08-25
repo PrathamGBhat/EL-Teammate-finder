@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Teams & Advertising — TeamFinder</title>
+<link rel="stylesheet" href="/css/style.css" />
+</head>
+<body>
+<main>
+  <h1>Teams &amp; Advertising</h1>
+  <p class="sub">Create a requirement if your team needs a teammate. Advertise any open requirement you know about — even one that isn't yours — so your connections can discover it.</p>
+
+  <h2>Create a team requirement</h2>
+  <div class="card">
+    <label for="branch">Required branch</label>
+    <input id="branch" placeholder="e.g. ECE" />
+    <label for="membersNeeded">Number of teammates needed</label>
+    <input id="membersNeeded" type="number" min="1" value="1" />
+    <div id="createMsg"></div>
+    <button id="createTeamBtn">Create requirement</button>
+  </div>
+
+  <h2>Teams you lead</h2>
+  <div id="myTeams"></div>
+
+  <h2>All open requirements (advertise one you know about)</h2>
+  <p class="sub" style="margin-top:-8px;">Advertising references the original team — it never copies it. If the team is marked complete, your advertisement automatically stops showing up in search.</p>
+  <div id="openTeams"></div>
+</main>
+
+<script src="/js/common.js"></script>
+<script src="/js/team.js"></script>
+</body>
+</html>
