@@ -104,13 +104,25 @@
       return;
     }
     connections.forEach((c) => {
-      connectionsList.appendChild(
-        el(`
+      const row = el(`
         <div class="card row">
           <div><span class="usn">${c.usn}</span> — ${c.name} (${c.branch})</div>
+          <button data-action="remove" class="danger">Remove</button>
         </div>
-      `)
-      );
+      `);
+      row.querySelector('[data-action="remove"]').addEventListener("click", async (e) => {
+        if (confirm(`Remove connection with ${c.name} (${c.usn})?`)) {
+          e.target.disabled = true;
+          try {
+            await Api.del(`/api/connections/${c.usn}`);
+            loadConnections();
+          } catch (err) {
+            alert(err.message);
+            e.target.disabled = false;
+          }
+        }
+      });
+      connectionsList.appendChild(row);
     });
   }
 

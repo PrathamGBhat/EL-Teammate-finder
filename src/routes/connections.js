@@ -119,4 +119,31 @@ router.post("/:requestId/reject", async (req, res) => {
   }
 });
 
+// DELETE /api/connections/:usn -> remove an existing connection
+router.delete("/:usn", async (req, res) => {
+  try {
+    const currentUsn = req.currentUsn;
+    const targetUsn = req.params.usn.toUpperCase();
+
+    if (currentUsn === targetUsn) {
+      return res.status(400).json({ error: "Cannot remove connection with yourself" });
+    }
+
+    const result = await Connection.deleteOne({
+      $or: [
+        { a: currentUsn, b: targetUsn },
+        { a: targetUsn, b: currentUsn },
+      ],
+    });
+
+    if (result.deletedCount === 0) {
+      return res.status(404).json({ error: "Connection not found" });
+    }
+
+    return res.status(200).json({ removed: true, usn: targetUsn });
+  } catch (err) {
+    return res.status(500).json({ error: "Remove connection failed" });
+  }
+});
+
 module.exports = router;
