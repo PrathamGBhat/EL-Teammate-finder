@@ -1,5 +1,5 @@
 const crypto = require("crypto");
-const { sessions } = require("../db/store");
+const Session = require("../db/models/Session");
 
 function hashPassword(password) {
   const salt = crypto.randomBytes(16).toString("hex");
@@ -8,6 +8,7 @@ function hashPassword(password) {
 }
 
 function verifyPassword(password, storedHash) {
+  if (!storedHash || !storedHash.includes(":")) return false;
   const [salt, derivedHex] = storedHash.split(":");
   const derived = crypto.scryptSync(password, salt, 64);
   const stored = Buffer.from(derivedHex, "hex");
@@ -20,9 +21,9 @@ function toPublicUser(user) {
   return { usn, name, branch };
 }
 
-function createSession(usn) {
+async function createSession(usn) {
   const sid = crypto.randomBytes(24).toString("hex");
-  sessions.set(sid, usn);
+  await Session.create({ sid, usn });
   return sid;
 }
 

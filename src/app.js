@@ -1,6 +1,7 @@
 const express = require("express");
 const cookieParser = require("cookie-parser");
 const { PUBLIC_DIR } = require("./config/constants");
+const { connectDB } = require("./db/connect");
 const { seed } = require("./db/seed");
 
 const authRoutes = require("./routes/auth");
@@ -10,10 +11,20 @@ const teamsRoutes = require("./routes/teams");
 const advertisementsRoutes = require("./routes/advertisements");
 const searchRoutes = require("./routes/search");
 
-// Initialize seed data
-seed();
-
 const app = express();
+
+// Database connection middleware (essential for Vercel serverless environments & local dev)
+app.use(async (req, res, next) => {
+  try {
+    await connectDB();
+    // Non-blocking seed execution check if database has no data yet
+    seed().catch((err) => console.error("Seed check error:", err));
+    next();
+  } catch (err) {
+    console.error("Database connection failed:", err);
+    return res.status(500).json({ error: "Database connection failed" });
+  }
+});
 
 // Middleware
 app.use(express.json());

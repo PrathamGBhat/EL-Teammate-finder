@@ -1,6 +1,7 @@
 const express = require("express");
 const router = express.Router();
-const { users, sessions } = require("../db/store");
+const User = require("../db/models/User");
+const Session = require("../db/models/Session");
 const { getUser } = require("../db/access");
 const {
   hashPassword,
@@ -16,60 +17,89 @@ const {
 const { SESSION_COOKIE } = require("../config/constants");
 
 // POST /api/signup  { usn, name, branch, password }
-router.post("/signup", (req, res) => {
-  const { usn, name, branch, password } = req.body || {};
-  if (!usn || !name || !branch || !password) {
-    return res.status(400).json({ error: "usn, name, branch and password are all required" });
+router.post("/signup", async (req, res) => {
+  try {
+    const { usn, name, branch, password } = req.body || {};
+    if (!usn || !name || !branch || !password) {
+      return res
+        .status(400)
+        .json({ error: "usn, name, branch and password are all required" });
+    }
+    if (password.length < 6) {
+      return res
+        .status(400)
+        .json({ error: "Password must be at least 6 characters" });
+    }
+    if (await getUser(usn)) {
+      return res
+        .status(409)
+        .json({ error: "That USN is already registered — log in instead" });
+    }
+    const user = await User.create({
+      usn,
+      name,
+      branch,
+      passwordHash: hashPassword(password),
+    });
+    const sid = await createSession(usn);
+    res.cookie(SESSION_COOKIE, sid, sessionCookieOptions);
+    return res.status(201).json({ user: toPublicUser(user) });
+  } catch (err) {
+    return res.status(500).json({ error: err.message || "Signup failed" });
   }
-  if (password.length < 6) {
-    return res.status(400).json({ error: "Password must be at least 6 characters" });
-  }
-  if (getUser(usn)) {
-    return res.status(409).json({ error: "That USN is already registered — log in instead" });
-  }
-  const user = { usn, name, branch, passwordHash: hashPassword(password) };
-  users.set(usn, user);
-  const sid = createSession(usn);
-  res.cookie(SESSION_COOKIE, sid, sessionCookieOptions);
-  return res.status(201).json({ user: toPublicUser(user) });
 });
 
 // POST /api/login  { usn, password }
-router.post("/login", (req, res) => {
-  const { usn, password } = req.body || {};
-  if (!usn || !password) {
-    return res.status(400).json({ error: "usn and password are required" });
-  }
+router.post("/login", async (req, res) => {
+  try {
+    const { usn, password } = req.body || {};
+    if (!usn || !password) {
+      return res.status(400).json({ error: "usn and password are required" });
+    }
 
-  const user = getUser(usn);
-  if (!user) {
-    return res.status(404).json({ error: "No account with that USN yet", isNewUser: true });
+    const user = await getUser(usn);
+    if (!user) {
+      return res
+        .status(404)
+        .json({ error: "No account with that USN yet", isNewUser: true });
+    }
+    if (!verifyPassword(password, user.passwordHash)) {
+      return res.status(401).json({ error: "Incorrect password" });
+    }
+    const sid = await createSession(usn);
+    res.cookie(SESSION_COOKIE, sid, sessionCookieOptions);
+    return res.status(200).json({ user: toPublicUser(user) });
+  } catch (err) {
+    return res.status(500).json({ error: err.message || "Login failed" });
   }
-  if (!verifyPassword(password, user.passwordHash)) {
-    return res.status(401).json({ error: "Incorrect password" });
-  }
-  const sid = createSession(usn);
-  res.cookie(SESSION_COOKIE, sid, sessionCookieOptions);
-  return res.status(200).json({ user: toPublicUser(user) });
 });
 
 // POST /api/logout
-router.post("/logout", (req, res) => {
-  const sid = req.cookies && req.cookies[SESSION_COOKIE];
-  if (sid) {
-    sessions.delete(sid);
+router.post("/logout", async (req, res) => {
+  try {
+    const sid = req.cookies && req.cookies[SESSION_COOKIE];
+    if (sid) {
+      await Session.deleteOne({ sid });
+    }
+    res.cookie(SESSION_COOKIE, "", clearCookieOptions);
+    return res.status(200).json({ ok: true });
+  } catch (err) {
+    res.cookie(SESSION_COOKIE, "", clearCookieOptions);
+    return res.status(200).json({ ok: true });
   }
-  res.cookie(SESSION_COOKIE, "", clearCookieOptions);
-  return res.status(200).json({ ok: true });
 });
 
 // GET /api/me
-router.get("/me", (req, res) => {
-  const usn = getSessionUser(req);
-  if (!usn) return res.status(401).json({ error: "Not logged in" });
-  const user = getUser(usn);
-  if (!user) return res.status(401).json({ error: "Not logged in" });
-  return res.status(200).json({ user: toPublicUser(user) });
+router.get("/me", async (req, res) => {
+  try {
+    const usn = await getSessionUser(req);
+    if (!usn) return res.status(401).json({ error: "Not logged in" });
+    const user = await getUser(usn);
+    if (!user) return res.status(401).json({ error: "Not logged in" });
+    return res.status(200).json({ user: toPublicUser(user) });
+  } catch (err) {
+    return res.status(401).json({ error: "Not logged in" });
+  }
 });
 
 module.exports = router;

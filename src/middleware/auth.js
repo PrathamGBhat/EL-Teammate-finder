@@ -1,19 +1,24 @@
-const { sessions } = require("../db/store");
+const Session = require("../db/models/Session");
 const { SESSION_COOKIE, SESSION_MAX_AGE_SECONDS } = require("../config/constants");
 
-function getSessionUser(req) {
+async function getSessionUser(req) {
   const sid = req.cookies && req.cookies[SESSION_COOKIE];
   if (!sid) return null;
-  return sessions.get(sid) || null;
+  const session = await Session.findOne({ sid }).lean();
+  return session ? session.usn : null;
 }
 
-function requireAuth(req, res, next) {
-  const usn = getSessionUser(req);
-  if (!usn) {
-    return res.status(401).json({ error: "Not logged in" });
+async function requireAuth(req, res, next) {
+  try {
+    const usn = await getSessionUser(req);
+    if (!usn) {
+      return res.status(401).json({ error: "Not logged in" });
+    }
+    req.currentUsn = usn;
+    next();
+  } catch (err) {
+    return res.status(500).json({ error: "Authentication check failed" });
   }
-  req.currentUsn = usn;
-  next();
 }
 
 const sessionCookieOptions = {

@@ -1,5 +1,7 @@
 /* ============================================================
    DATA STORE (in-memory — swap for MongoDB/etc. later)
+   Holds all application data (users, sessions, connections,
+   connection requests, teams, advertisements) and ID generators.
    ============================================================ */
 
 const users = new Map(); // usn -> { usn, name, branch, passwordHash }

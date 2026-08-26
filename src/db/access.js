@@ -1,56 +1,76 @@
-const {
-  users,
-  connections,
-  teams,
-  advertisements,
-  getNextAdId,
-} = require("./store");
+// Data access helpers: query/lookup functions for users, connections, teams, and advertisements stored in MongoDB.
+
+const User = require("./models/User");
+const Connection = require("./models/Connection");
+const Team = require("./models/Team");
+const Advertisement = require("./models/Advertisement");
+const { getNextSequence } = require("./models/Counter");
 const { toPublicUser } = require("../utils/auth");
 
 /* ============================================================
    DATA ACCESS HELPERS
    ============================================================ */
 
-function getUser(usn) {
-  return users.get(usn) || null;
+async function getUser(usn) {
+  if (!usn) return null;
+  return await User.findOne({ usn }).lean();
 }
 
-function areConnected(usn1, usn2) {
-  return connections.some(
-    (c) => (c.a === usn1 && c.b === usn2) || (c.a === usn2 && c.b === usn1)
-  );
+async function areConnected(usn1, usn2) {
+  const count = await Connection.countDocuments({
+    $or: [
+      { a: usn1, b: usn2 },
+      { a: usn2, b: usn1 },
+    ],
+  });
+  return count > 0;
 }
 
-function getConnectionsOf(usn) {
-  return connections
-    .filter((c) => c.a === usn || c.b === usn)
-    .map((c) => (c.a === usn ? c.b : c.a))
-    .map((otherUsn) => getUser(otherUsn))
-    .filter(Boolean)
-    .map(toPublicUser);
+async function getConnectionsOf(usn) {
+  const conns = await Connection.find({
+    $or: [{ a: usn }, { b: usn }],
+  }).lean();
+  const otherUsns = conns.map((c) => (c.a === usn ? c.b : c.a));
+  if (otherUsns.length === 0) return [];
+  const users = await User.find({ usn: { $in: otherUsns } }).lean();
+  return users.map(toPublicUser);
 }
 
-function getTeam(teamId) {
-  return teams.find((t) => t.id === Number(teamId)) || null;
+async function getTeam(teamId) {
+  if (!teamId) return null;
+  return await Team.findOne({ id: Number(teamId) }).lean();
 }
 
-function getAdvertisementsOf(usn) {
-  return advertisements
-    .filter((ad) => ad.advertiserUSN === usn)
-    .map((ad) => ({ ...ad, team: getTeam(ad.teamId) }));
+async function getAdvertisementsOf(usn) {
+  const ads = await Advertisement.find({ advertiserUSN: usn }).lean();
+  if (ads.length === 0) return [];
+  const teamIds = ads.map((ad) => ad.teamId);
+  const teams = await Team.find({ id: { $in: teamIds } }).lean();
+  const teamMap = new Map(teams.map((t) => [t.id, t]));
+  return ads.map((ad) => ({ ...ad, team: teamMap.get(ad.teamId) || null }));
 }
 
-function advertiseTeam(advertiserUSN, teamId) {
-  if (
-    advertisements.some(
-      (ad) => ad.advertiserUSN === advertiserUSN && ad.teamId === teamId
-    )
-  ) {
+async function advertiseTeam(advertiserUSN, teamId) {
+  const numTeamId = Number(teamId);
+  const existing = await Advertisement.findOne({
+    advertiserUSN,
+    teamId: numTeamId,
+  }).lean();
+  if (existing) {
     return null; // already advertising it
   }
-  const ad = { id: getNextAdId(), advertiserUSN, teamId };
-  advertisements.push(ad);
-  return ad;
+  const adId = await getNextSequence("adId");
+  const ad = await Advertisement.create({
+    id: adId,
+    advertiserUSN,
+    teamId: numTeamId,
+  });
+  return ad.toObject();
+}
+
+async function deleteAdvertisement(adId) {
+  const res = await Advertisement.deleteOne({ id: Number(adId) });
+  return res.deletedCount > 0;
 }
 
 /**
@@ -59,32 +79,53 @@ function advertiseTeam(advertiserUSN, teamId) {
  *   current user -> their connections -> those connections'
  *   advertisements -> open teams matching branch -> relevant USNs
  */
-function discover(usn, branch) {
-  const myConnections = getConnectionsOf(usn).map((u) => u.usn);
+async function discover(usn, branch) {
+  const myConnectionsPublic = await getConnectionsOf(usn);
+  const myConnectionUSNs = myConnectionsPublic.map((u) => u.usn);
+
+  if (myConnectionUSNs.length === 0) return [];
+
+  const ads = await Advertisement.find({
+    advertiserUSN: { $in: myConnectionUSNs },
+  }).lean();
+  if (ads.length === 0) return [];
+
+  const teamIds = [...new Set(ads.map((ad) => ad.teamId))];
+  const teams = await Team.find({
+    id: { $in: teamIds },
+    status: "OPEN",
+    requiredBranch: branch,
+  }).lean();
+  if (teams.length === 0) return [];
+
+  const teamMap = new Map(teams.map((t) => [t.id, t]));
+
+  const leaderUSNs = teams.map((t) => t.leaderUSN);
+  const allNeededUSNs = [...new Set([...myConnectionUSNs, ...leaderUSNs])];
+  const userProfiles = await User.find({ usn: { $in: allNeededUSNs } }).lean();
+  const userMap = new Map(userProfiles.map((u) => [u.usn, u]));
 
   const results = [];
   const seenTeamIds = new Set();
 
-  for (const connUsn of myConnections) {
-    const ads = getAdvertisementsOf(connUsn);
-    for (const ad of ads) {
-      const team = ad.team;
-      if (!team) continue;
-      if (team.status !== "OPEN") continue;
-      if (team.requiredBranch !== branch) continue;
-      if (seenTeamIds.has(team.id)) continue; // avoid duplicate teams found via multiple friends
-      seenTeamIds.add(team.id);
+  for (const ad of ads) {
+    const team = teamMap.get(ad.teamId);
+    if (!team) continue;
+    if (seenTeamIds.has(team.id)) continue; // avoid duplicate teams found via multiple friends
+    seenTeamIds.add(team.id);
 
-      results.push({
-        teamId: team.id,
-        contactUSN: team.leaderUSN,
-        contactName: getUser(team.leaderUSN)?.name || team.leaderUSN,
-        requiredBranch: team.requiredBranch,
-        membersNeeded: team.membersNeeded,
-        foundThroughUSN: connUsn,
-        foundThroughName: getUser(connUsn)?.name || connUsn,
-      });
-    }
+    const leader = userMap.get(team.leaderUSN);
+    const connUser = userMap.get(ad.advertiserUSN);
+
+    results.push({
+      teamId: team.id,
+      contactUSN: team.leaderUSN,
+      contactName: leader ? leader.name : team.leaderUSN,
+      requiredBranch: team.requiredBranch,
+      membersNeeded: team.membersNeeded,
+      foundThroughUSN: ad.advertiserUSN,
+      foundThroughName: connUser ? connUser.name : ad.advertiserUSN,
+    });
   }
   return results;
 }
@@ -96,5 +137,6 @@ module.exports = {
   getTeam,
   getAdvertisementsOf,
   advertiseTeam,
+  deleteAdvertisement,
   discover,
 };
