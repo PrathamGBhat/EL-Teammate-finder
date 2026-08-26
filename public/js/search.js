@@ -44,6 +44,7 @@
   }
 
   searchBtn.addEventListener("click", doSearch);
+  branchInput.addEventListener("change", doSearch);
   branchInput.addEventListener("keydown", (e) => {
     if (e.key === "Enter") doSearch();
   });
