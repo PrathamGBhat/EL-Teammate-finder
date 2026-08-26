@@ -4,6 +4,7 @@
 
   const branchInput = document.getElementById("branch");
   const membersInput = document.getElementById("membersNeeded");
+  const phoneInput = document.getElementById("contactPhone");
   const createMsg = document.getElementById("createMsg");
   const createBtn = document.getElementById("createTeamBtn");
   const myTeamsEl = document.getElementById("myTeams");
@@ -18,14 +19,17 @@
   createBtn.addEventListener("click", async () => {
     const requiredBranch = branchInput.value.trim().toUpperCase();
     const membersNeeded = Number(membersInput.value);
+    const contactPhone = phoneInput ? phoneInput.value.trim() : "";
+
     if (!requiredBranch || !membersNeeded || membersNeeded < 1) {
       return showMsg(createMsg, "Enter a branch and a valid number of teammates needed.", true);
     }
     createBtn.disabled = true;
     try {
-      await Api.post("/api/teams", { requiredBranch, membersNeeded });
+      await Api.post("/api/teams", { requiredBranch, membersNeeded, contactPhone });
       branchInput.value = "";
       membersInput.value = "1";
+      if (phoneInput) phoneInput.value = "";
       showMsg(createMsg, "Requirement created and advertised under your profile.", false);
       loadMyTeams();
       loadOpenTeams();
@@ -44,10 +48,11 @@
       return;
     }
     teams.forEach((t) => {
+      const phoneMarkup = t.contactPhone ? ` · 📞 <strong>${t.contactPhone}</strong>` : "";
       const row = el(`
         <div class="card row">
           <div>
-            <div>Team #${t.id} · needs <strong>${t.requiredBranch}</strong> · ${t.membersNeeded} spot(s)</div>
+            <div>Team #${t.id} · needs <strong>${t.requiredBranch}</strong> · ${t.membersNeeded} spot(s)${phoneMarkup}</div>
           </div>
           <div style="display:flex; align-items:center; gap:10px;">
             <span class="pill ${t.status === "OPEN" ? "open" : "complete"}">${t.status}</span>
@@ -83,10 +88,11 @@
     teams.forEach((t) => {
       const isMine = t.leaderUSN === user.usn;
       const myAdId = myAdByTeamId.get(t.id);
+      const phoneMarkup = t.contactPhone ? ` · 📞 <strong>${t.contactPhone}</strong>` : "";
       const row = el(`
         <div class="card row">
           <div>
-            <div>Team #${t.id} · needs <strong>${t.requiredBranch}</strong> · led by <span class="usn">${t.leaderUSN}</span></div>
+            <div>Team #${t.id} · needs <strong>${t.requiredBranch}</strong> · led by <span class="usn">${t.leaderUSN}</span>${phoneMarkup}</div>
             <div class="found-through">${t.membersNeeded} spot(s) needed</div>
           </div>
           <button ${isMine ? "disabled" : ""} data-action="${myAdId ? "remove" : "advertise"}" class="${myAdId ? "danger" : ""}">

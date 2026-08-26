@@ -132,4 +132,61 @@ router.delete("/users/:usn", async (req, res) => {
   }
 });
 
+// GET /api/admin/teams?q= (Fetch global teams list)
+router.get("/teams", async (req, res) => {
+  try {
+    const q = (req.query.q || "").trim();
+    let filter = {};
+    if (q) {
+      const escapedQ = escapeRegex(q);
+      const isNum = !isNaN(Number(q));
+      filter = {
+        $or: [
+          ...(isNum ? [{ id: Number(q) }] : []),
+          { leaderUSN: { $regex: "^" + escapedQ, $options: "i" } },
+          { requiredBranch: { $regex: "^" + escapedQ, $options: "i" } },
+          { status: { $regex: "^" + escapedQ, $options: "i" } },
+        ],
+      };
+    }
+    const teams = await Team.find(filter).sort({ id: -1 }).lean();
+    return res.status(200).json({ teams });
+  } catch (err) {
+    return res.status(500).json({ error: "Failed to fetch teams" });
+  }
+});
+
+// POST /api/admin/teams/:id/toggle-status (Toggle team OPEN / COMPLETE)
+router.post("/teams/:id/toggle-status", async (req, res) => {
+  try {
+    const teamId = Number(req.params.id);
+    const team = await Team.findOne({ id: teamId });
+    if (!team) return res.status(404).json({ error: "Team requirement not found" });
+
+    team.status = team.status === "OPEN" ? "COMPLETE" : "OPEN";
+    await team.save();
+    return res.status(200).json({ team: team.toObject() });
+  } catch (err) {
+    return res.status(500).json({ error: "Failed to update team status" });
+  }
+});
+
+// DELETE /api/admin/teams/:id (Delete team & associated advertisements)
+router.delete("/teams/:id", async (req, res) => {
+  try {
+    const teamId = Number(req.params.id);
+    const team = await Team.findOne({ id: teamId });
+    if (!team) return res.status(404).json({ error: "Team requirement not found" });
+
+    await Promise.all([
+      Team.deleteOne({ id: teamId }),
+      Advertisement.deleteMany({ teamId }),
+    ]);
+
+    return res.status(200).json({ deleted: true, teamId });
+  } catch (err) {
+    return res.status(500).json({ error: "Failed to delete team requirement" });
+  }
+});
+
 module.exports = router;

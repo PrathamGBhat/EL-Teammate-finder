@@ -1,5 +1,6 @@
 const usnInput = document.getElementById("usn");
 const passwordInput = document.getElementById("password");
+const togglePasswordBtn = document.getElementById("togglePasswordBtn");
 const nameInput = document.getElementById("name");
 const branchInput = document.getElementById("branch");
 const newUserFields = document.getElementById("newUserFields");
@@ -7,6 +8,14 @@ const msg = document.getElementById("msg");
 const loginBtn = document.getElementById("loginBtn");
 
 let mode = "login"; // "login" | "signup"
+
+if (togglePasswordBtn && passwordInput) {
+  togglePasswordBtn.addEventListener("click", () => {
+    const isPassword = passwordInput.type === "password";
+    passwordInput.type = isPassword ? "text" : "password";
+    togglePasswordBtn.textContent = isPassword ? "🙈" : "👁️";
+  });
+}
 
 // If already logged in, skip straight to profile.
 Api.get("/api/me")
@@ -36,6 +45,7 @@ loginBtn.addEventListener("click", async () => {
     } else {
       await Api.post("/api/login", { usn, password });
     }
+    sessionStorage.setItem("current_pwd", password);
     window.location.href = "/profile.html";
   } catch (err) {
     if (err.data && err.data.isNewUser) {

@@ -20,6 +20,9 @@
   const searchInput = document.getElementById("searchUsn");
   const userListEl = document.getElementById("userList");
 
+  const searchTeamInput = document.getElementById("searchTeam");
+  const teamListEl = document.getElementById("teamList");
+
   // Modal elements
   const editModal = document.getElementById("editModal");
   const editUsnDisplay = document.getElementById("editUsnDisplay");
@@ -30,6 +33,24 @@
   const editMsg = document.getElementById("editMsg");
   const cancelEditBtn = document.getElementById("cancelEditBtn");
   const saveEditBtn = document.getElementById("saveEditBtn");
+
+  const toggleNewPasswordBtn = document.getElementById("toggleNewPasswordBtn");
+  if (toggleNewPasswordBtn && newPasswordInput) {
+    toggleNewPasswordBtn.addEventListener("click", () => {
+      const isPassword = newPasswordInput.type === "password";
+      newPasswordInput.type = isPassword ? "text" : "password";
+      toggleNewPasswordBtn.textContent = isPassword ? "🙈" : "👁️";
+    });
+  }
+
+  const toggleEditPasswordBtn = document.getElementById("toggleEditPasswordBtn");
+  if (toggleEditPasswordBtn && editPasswordInput) {
+    toggleEditPasswordBtn.addEventListener("click", () => {
+      const isPassword = editPasswordInput.type === "password";
+      editPasswordInput.type = isPassword ? "text" : "password";
+      toggleEditPasswordBtn.textContent = isPassword ? "🙈" : "👁️";
+    });
+  }
 
   let currentEditingUsn = null;
 
@@ -71,7 +92,7 @@
     }
   });
 
-  // Search Debounce
+  // User Search Debounce
   let searchDebounce;
   let activeAdminQuery = "";
 
@@ -144,6 +165,86 @@
     }
   }
 
+  // Team Search Debounce
+  let teamSearchDebounce;
+  let activeTeamQuery = "";
+
+  if (searchTeamInput) {
+    searchTeamInput.addEventListener("input", () => {
+      clearTimeout(teamSearchDebounce);
+      activeTeamQuery = searchTeamInput.value.trim();
+      teamSearchDebounce = setTimeout(loadTeams, 250);
+    });
+  }
+
+  // Fetch and render global teams
+  async function loadTeams() {
+    if (!teamListEl) return;
+    const q = searchTeamInput ? searchTeamInput.value.trim() : "";
+    activeTeamQuery = q;
+    teamListEl.innerHTML = `<div class="empty">Loading team requirements...</div>`;
+    try {
+      const { teams } = await Api.get(`/api/admin/teams?q=${encodeURIComponent(q)}`);
+      if (activeTeamQuery !== q) return;
+
+      teamListEl.innerHTML = "";
+
+      if (teams.length === 0) {
+        teamListEl.appendChild(el(`<div class="empty">${q ? `No teams matching "${q}".` : 'No team requirements found in database.'}</div>`));
+        return;
+      }
+
+      teams.forEach((t) => {
+        const phoneMarkup = t.contactPhone ? ` · 📞 <strong>${t.contactPhone}</strong>` : "";
+        const row = el(`
+          <div class="card row">
+            <div>
+              <div>
+                <strong>Team #${t.id}</strong> · needs <strong>${t.requiredBranch}</strong> · led by <span class="usn">${t.leaderUSN}</span>${phoneMarkup}
+              </div>
+              <div class="found-through">${t.membersNeeded} spot(s) needed</div>
+            </div>
+            <div class="action-btns" style="align-items:center;">
+              <span class="pill ${t.status === "OPEN" ? "open" : "complete"}">${t.status}</span>
+              <button data-action="toggle" class="secondary">${t.status === "OPEN" ? "Mark complete" : "Reopen"}</button>
+              <button data-action="delete" class="danger">Delete</button>
+            </div>
+          </div>
+        `);
+
+        // Toggle Status Handler
+        row.querySelector('[data-action="toggle"]').addEventListener("click", async (e) => {
+          e.target.disabled = true;
+          try {
+            await Api.post(`/api/admin/teams/${t.id}/toggle-status`, {});
+            loadTeams();
+          } catch (err) {
+            alert(err.message);
+            e.target.disabled = false;
+          }
+        });
+
+        // Delete Team Handler
+        row.querySelector('[data-action="delete"]').addEventListener("click", async (e) => {
+          if (confirm(`Are you sure you want to delete Team #${t.id} led by ${t.leaderUSN}?\n\nThis will also remove all active advertisements of this team.`)) {
+            e.target.disabled = true;
+            try {
+              await Api.del(`/api/admin/teams/${t.id}`);
+              loadTeams();
+            } catch (err) {
+              alert(err.message);
+              e.target.disabled = false;
+            }
+          }
+        });
+
+        teamListEl.appendChild(row);
+      });
+    } catch (err) {
+      teamListEl.innerHTML = `<div class="error-msg">${err.message}</div>`;
+    }
+  }
+
   // Open Edit Modal
   function openEditModal(u) {
     currentEditingUsn = u.usn;
@@ -191,4 +292,5 @@
   });
 
   loadUsers();
+  loadTeams();
 })();

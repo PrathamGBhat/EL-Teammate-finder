@@ -30,7 +30,28 @@
   <p class="sub" style="margin-top:-8px;">Requirements you've referenced under your profile, visible to your connections.</p>
   <div id="adsList"></div>
 
-  <p class="sub">Manage these on the <a href="/team.html" style="color:var(--accent)">Teams & Advertising</a> page.</p>
+  <p class="sub" style="margin-bottom:28px;">Manage these on the <a href="/team.html" style="color:var(--accent)">Teams &amp; Advertising</a> page.</p>
+
+  <!-- Security & Change Password Section -->
+  <h2>Security &amp; Account</h2>
+  <div class="card">
+    <h3 style="margin:0 0 12px; font-size:15px;">Change Password</h3>
+
+    <label for="currentPassword">Current Password</label>
+    <div class="password-wrap">
+      <input id="currentPassword" type="password" placeholder="Enter current password" autocomplete="current-password" />
+      <button type="button" class="toggle-password" id="toggleCurrentPasswordBtn" title="Toggle password visibility">👁️</button>
+    </div>
+
+    <label for="newPassword">New Password</label>
+    <div class="password-wrap">
+      <input id="newPassword" type="password" placeholder="Min 6 characters" />
+      <button type="button" class="toggle-password" id="toggleNewPasswordBtn" title="Toggle password visibility">👁️</button>
+    </div>
+
+    <div id="changePasswordMsg"></div>
+    <button id="changePasswordBtn">Update Password</button>
+  </div>
 </main>
 
 <script src="/js/common.js"></script>

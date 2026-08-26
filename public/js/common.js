@@ -58,6 +58,7 @@ function renderNav(active, user) {
     { href: "/connections.html", label: "Connections", key: "connections" },
     { href: "/team.html", label: "Teams & Advertising", key: "team" },
     { href: "/search.html", label: "Find a Teammate", key: "search" },
+    { href: "/credits.html", label: "Credits", key: "credits" },
   ];
 
   if (user && (user.isAdmin || user.usn === "1RV25CS131")) {
@@ -81,6 +82,7 @@ function renderNav(active, user) {
   const logoutBtn = document.getElementById("logoutBtn");
   if (logoutBtn) {
     logoutBtn.addEventListener("click", async () => {
+      sessionStorage.removeItem("current_pwd");
       await Api.post("/api/logout", {}).catch(() => {});
       window.location.href = "/index.html";
     });

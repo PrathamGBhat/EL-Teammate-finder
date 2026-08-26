@@ -2,7 +2,7 @@ const express = require("express");
 const router = express.Router();
 const User = require("../db/models/User");
 const { getUser } = require("../db/access");
-const { toPublicUser } = require("../utils/auth");
+const { hashPassword, toPublicUser } = require("../utils/auth");
 const { requireAuth } = require("../middleware/auth");
 
 router.use(requireAuth);
@@ -32,6 +32,37 @@ router.get("/", async (req, res) => {
     return res.status(200).json({ users: matchedUsers.map(toPublicUser) });
   } catch (err) {
     return res.status(500).json({ error: "Search users failed" });
+  }
+});
+
+// PUT /api/users/me/password (Change password for logged-in user)
+router.put("/me/password", async (req, res) => {
+  try {
+    const currentUsn = req.currentUsn;
+    const { currentPassword, newPassword } = req.body || {};
+
+    if (!currentPassword || !newPassword) {
+      return res.status(400).json({ error: "Current password and new password are required" });
+    }
+    if (newPassword.length < 6) {
+      return res.status(400).json({ error: "New password must be at least 6 characters" });
+    }
+
+    const user = await User.findOne({ usn: currentUsn });
+    if (!user) {
+      return res.status(404).json({ error: "User not found" });
+    }
+
+    if (user.passwordHash !== hashPassword(currentPassword)) {
+      return res.status(401).json({ error: "Incorrect current password" });
+    }
+
+    user.passwordHash = hashPassword(newPassword);
+    await user.save();
+
+    return res.status(200).json({ success: true, message: "Password updated successfully!" });
+  } catch (err) {
+    return res.status(500).json({ error: "Failed to update password" });
   }
 });
 

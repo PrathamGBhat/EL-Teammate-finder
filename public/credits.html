@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Credits &amp; Acknowledgments — TeamFinder</title>
+  <link rel="stylesheet" href="/css/style.css" />
+  <style>
+    .credits-hero {
+      text-align: center;
+      padding: 24px 0 36px;
+    }
+
+    .hero-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: 1.2px;
+      text-transform: uppercase;
+      color: #70a1ff;
+      background: rgba(112, 161, 255, 0.12);
+      border: 1px solid rgba(112, 161, 255, 0.25);
+      padding: 6px 14px;
+      border-radius: 100px;
+      margin-bottom: 14px;
+    }
+
+    .credits-hero h1 {
+      font-size: 32px;
+      font-weight: 800;
+      background: linear-gradient(135deg, #ffffff 0%, #a5b4fc 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      margin: 0 0 10px;
+    }
+
+    .credits-hero p {
+      color: var(--muted);
+      font-size: 15px;
+      max-width: 520px;
+      margin: 0 auto;
+      line-height: 1.5;
+    }
+
+    .credits-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+      gap: 24px;
+      margin-top: 10px;
+    }
+
+    .credit-card {
+      position: relative;
+      background: linear-gradient(145deg, rgba(23, 26, 33, 0.9), rgba(15, 17, 21, 0.95));
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 16px;
+      padding: 28px;
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.24);
+      overflow: hidden;
+    }
+
+    .credit-card::before {
+      content: "";
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 3px;
+      background: linear-gradient(90deg, #5b8def, #805ad5);
+      opacity: 0.8;
+    }
+
+    .credit-card.ideation-card::before {
+      background: linear-gradient(90deg, #f6ad55, #ed8936);
+    }
+
+    .credit-card:hover {
+      transform: translateY(-5px);
+      border-color: rgba(91, 141, 239, 0.3);
+      box-shadow: 0 16px 40px rgba(91, 141, 239, 0.15);
+    }
+
+    .credit-card.ideation-card:hover {
+      border-color: rgba(246, 173, 85, 0.3);
+      box-shadow: 0 16px 40px rgba(246, 173, 85, 0.15);
+    }
+
+    .card-header-icon {
+      width: 44px;
+      height: 44px;
+      border-radius: 12px;
+      background: rgba(91, 141, 239, 0.12);
+      border: 1px solid rgba(91, 141, 239, 0.25);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 20px;
+      margin-bottom: 16px;
+    }
+
+    .ideation-card .card-header-icon {
+      background: rgba(246, 173, 85, 0.12);
+      border-color: rgba(246, 173, 85, 0.25);
+    }
+
+    .card-title {
+      font-size: 18px;
+      font-weight: 700;
+      color: #ffffff;
+      margin: 0 0 4px;
+    }
+
+    .card-subtitle {
+      font-size: 13px;
+      color: var(--muted);
+      margin: 0 0 20px;
+    }
+
+    .member-list {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+    }
+
+    .member-item {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      padding: 12px 14px;
+      background: rgba(255, 255, 255, 0.03);
+      border: 1px solid rgba(255, 255, 255, 0.05);
+      border-radius: 12px;
+      transition: background 0.2s ease;
+    }
+
+    .member-item:hover {
+      background: rgba(255, 255, 255, 0.06);
+    }
+
+    .member-avatar-badge {
+      width: 42px;
+      height: 42px;
+      border-radius: 10px;
+      background: linear-gradient(135deg, #2b3245, #1c202d);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 15px;
+      font-weight: 700;
+      color: #70a1ff;
+      flex-shrink: 0;
+    }
+
+    .ideation-card .member-avatar-badge {
+      color: #f6ad55;
+      font-size: 18px;
+    }
+
+    .member-info {
+      flex: 1;
+    }
+
+    .member-name {
+      font-size: 15px;
+      font-weight: 700;
+      color: #ffffff;
+      margin: 0 0 2px;
+    }
+
+    .member-role {
+      font-size: 12px;
+      color: var(--muted);
+    }
+
+    .footer-note {
+      text-align: center;
+      margin-top: 40px;
+      padding-top: 20px;
+      border-top: 1px solid rgba(255, 255, 255, 0.06);
+      font-size: 13px;
+      color: var(--muted);
+    }
+  </style>
+</head>
+
+<body>
+  <main>
+    <div class="credits-hero">
+      <div class="hero-badge">✨ TeamFinder Contributors</div>
+      <h1>Credits &amp; Acknowledgments</h1>
+      <p>The visionaries, engineers, and creators behind the USN Teammate Matchmaking Platform.</p>
+    </div>
+
+    <div class="credits-grid">
+      <!-- Development Card -->
+      <div class="credit-card">
+        <div class="card-header-icon">💻</div>
+        <h2 class="card-title">Development &amp; Engineering</h2>
+        <p class="card-subtitle">Architecture, database design &amp; full-stack implementation</p>
+
+        <ul class="member-list">
+          <li class="member-item">
+            <div class="member-avatar-badge">SS</div>
+            <div class="member-info">
+              <div class="member-name">Samarth S S</div>
+            </div>
+          </li>
+          <li class="member-item">
+            <div class="member-avatar-badge">PB</div>
+            <div class="member-info">
+              <div class="member-name">Pratham G Bhat</div>
+            </div>
+          </li>
+        </ul>
+      </div>
+
+      <!-- Ideation Card -->
+      <div class="credit-card ideation-card">
+        <div class="card-header-icon">👑</div>
+        <h2 class="card-title">Ideation &amp; Concept</h2>
+        <p class="card-subtitle">Original product concept &amp; strategic vision</p>
+
+        <ul class="member-list">
+          <li class="member-item">
+            <div class="member-avatar-badge">👑</div>
+            <div class="member-info">
+              <div class="member-name">House of Lords (CR Group)</div>
+            </div>
+          </li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="footer-note">
+      Crafted with passion for RVCE Students • TeamFinder Matchmaking System
+    </div>
+  </main>
+
+  <script src="/js/common.js"></script>
+  <script src="/js/credits.js"></script>
+</body>
+
+</html>

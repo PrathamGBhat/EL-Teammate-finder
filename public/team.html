@@ -32,6 +32,10 @@
     </select>
     <label for="membersNeeded">Number of teammates needed</label>
     <input id="membersNeeded" type="number" min="1" value="1" />
+
+    <label for="contactPhone">Contact Phone Number (Optional)</label>
+    <input id="contactPhone" type="tel" placeholder="e.g. +91 9876543210 (optional)" />
+
     <div id="createMsg"></div>
     <button id="createTeamBtn">Create requirement</button>
   </div>
@@ -39,8 +43,8 @@
   <h2>Teams you lead</h2>
   <div id="myTeams"></div>
 
-  <h2>All open requirements (advertise one you know about)</h2>
-  <p class="sub" style="margin-top:-8px;">Advertising references the original team — it never copies it. If the team is marked complete, your advertisement automatically stops showing up in search.</p>
+  <h2>Open requirements from your connections</h2>
+  <p class="sub" style="margin-top:-8px;">Shows open requirements led by people you are directly connected with. Advertising references the original team under your profile so your friends can discover it in search.</p>
   <div id="openTeams"></div>
 </main>
 

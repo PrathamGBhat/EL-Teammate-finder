@@ -7,6 +7,7 @@ const TeamSchema = new mongoose.Schema({
   membersNeeded: { type: Number, required: true },
   members: { type: [String], default: [] },
   status: { type: String, enum: ["OPEN", "COMPLETE"], default: "OPEN" },
+  contactPhone: { type: String, default: "" },
 });
 
 module.exports = mongoose.models.Team || mongoose.model("Team", TeamSchema);

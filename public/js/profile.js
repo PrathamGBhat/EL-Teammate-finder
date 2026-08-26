@@ -5,6 +5,68 @@
   document.getElementById("name").textContent = user.name;
   document.getElementById("sub").innerHTML = `<span class="usn">${user.usn}</span> · ${user.branch}`;
 
+  const currentPasswordInput = document.getElementById("currentPassword");
+  const toggleCurrentPasswordBtn = document.getElementById("toggleCurrentPasswordBtn");
+  if (toggleCurrentPasswordBtn && currentPasswordInput) {
+    toggleCurrentPasswordBtn.addEventListener("click", () => {
+      const isPassword = currentPasswordInput.type === "password";
+      currentPasswordInput.type = isPassword ? "text" : "password";
+      toggleCurrentPasswordBtn.textContent = isPassword ? "🙈" : "👁️";
+    });
+  }
+
+  const newPasswordInput = document.getElementById("newPassword");
+  const toggleNewPasswordBtn = document.getElementById("toggleNewPasswordBtn");
+  if (toggleNewPasswordBtn && newPasswordInput) {
+    toggleNewPasswordBtn.addEventListener("click", () => {
+      const isPassword = newPasswordInput.type === "password";
+      newPasswordInput.type = isPassword ? "text" : "password";
+      toggleNewPasswordBtn.textContent = isPassword ? "🙈" : "👁️";
+    });
+  }
+
+  const savedPwd = sessionStorage.getItem("current_pwd");
+  if (savedPwd && currentPasswordInput) {
+    currentPasswordInput.value = savedPwd;
+  }
+
+  // Change Password logic
+  const changePasswordBtn = document.getElementById("changePasswordBtn");
+  const changePasswordMsg = document.getElementById("changePasswordMsg");
+
+  function showMsg(text, isError) {
+    changePasswordMsg.innerHTML = text
+      ? `<div class="${isError ? "error-msg" : "success-msg"}">${text}</div>`
+      : "";
+  }
+
+  if (changePasswordBtn) {
+    changePasswordBtn.addEventListener("click", async () => {
+      const currentPassword = currentPasswordInput.value.trim();
+      const newPassword = newPasswordInput.value.trim();
+
+      if (!currentPassword || !newPassword) {
+        return showMsg("Please enter both your current and new password.", true);
+      }
+      if (newPassword.length < 6) {
+        return showMsg("New password must be at least 6 characters.", true);
+      }
+
+      changePasswordBtn.disabled = true;
+      try {
+        await Api.put("/api/users/me/password", { currentPassword, newPassword });
+        showMsg("Password updated successfully!", false);
+        sessionStorage.setItem("current_pwd", newPassword);
+        currentPasswordInput.value = newPassword;
+        newPasswordInput.value = "";
+      } catch (err) {
+        showMsg(err.message, true);
+      } finally {
+        changePasswordBtn.disabled = false;
+      }
+    });
+  }
+
   await load();
 
   async function load() {
@@ -29,11 +91,12 @@
     advertisements.forEach((ad) => {
       const t = ad.team;
       if (!t) return;
+      const phoneMarkup = t.contactPhone ? ` · 📞 <strong>${t.contactPhone}</strong>` : "";
       const row = el(`
         <div class="card row">
           <div>
             <div>Team #${t.id} · needs <strong>${t.requiredBranch}</strong> · led by
-              <span class="usn">${t.leaderUSN}</span></div>
+              <span class="usn">${t.leaderUSN}</span>${phoneMarkup}</div>
             <div class="found-through">${t.membersNeeded} spot(s) needed</div>
           </div>
           <div style="display:flex; align-items:center; gap:10px;">

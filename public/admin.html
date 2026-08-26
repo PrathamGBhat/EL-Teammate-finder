@@ -43,7 +43,7 @@
     <h1>Admin Panel</h1>
     <span class="admin-badge">System Administrator</span>
   </div>
-  <p class="sub">Full CRUD database management for user accounts and administrator role assignment.</p>
+  <p class="sub">Full CRUD database management for user accounts and global team requirements.</p>
 
   <!-- Create User Card -->
   <h2>Add New User</h2>
@@ -73,7 +73,10 @@
     </select>
 
     <label for="newPassword">Password</label>
-    <input id="newPassword" type="password" placeholder="Min 6 characters" />
+    <div class="password-wrap">
+      <input id="newPassword" type="password" placeholder="Min 6 characters" />
+      <button type="button" class="toggle-password" id="toggleNewPasswordBtn" title="Toggle password visibility">👁️</button>
+    </div>
 
     <label style="display:flex; align-items:center; gap:8px; cursor:pointer; margin-bottom:16px;">
       <input type="checkbox" id="newIsAdmin" style="width:auto; margin:0;" />
@@ -92,6 +95,15 @@
   </div>
 
   <div id="userList"></div>
+
+  <!-- Global Teams Directory Section -->
+  <h2>Global Team Requirements</h2>
+  <div class="card">
+    <label for="searchTeam">Filter Teams</label>
+    <input id="searchTeam" placeholder="Search by Team ID, Leader USN, Branch, or Status..." />
+  </div>
+
+  <div id="teamList"></div>
 
   <!-- Edit User Modal (hidden by default) -->
   <div id="editModal" class="modal-backdrop" style="display:none;">
@@ -120,7 +132,10 @@
       </select>
 
       <label for="editPassword">New Password (leave blank to keep unchanged)</label>
-      <input id="editPassword" type="password" placeholder="••••••••" />
+      <div class="password-wrap">
+        <input id="editPassword" type="password" placeholder="••••••••" />
+        <button type="button" class="toggle-password" id="toggleEditPasswordBtn" title="Toggle password visibility">👁️</button>
+      </div>
 
       <label style="display:flex; align-items:center; gap:8px; cursor:pointer; margin-bottom:16px;">
         <input type="checkbox" id="editIsAdmin" style="width:auto; margin:0;" />

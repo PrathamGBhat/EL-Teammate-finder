@@ -6,6 +6,7 @@ const {
   getAdvertisementsOf,
   advertiseTeam,
   deleteAdvertisement,
+  areConnected,
 } = require("../db/access");
 const { requireAuth } = require("../middleware/auth");
 
@@ -29,6 +30,17 @@ router.post("/", async (req, res) => {
     if (!teamId) return res.status(400).json({ error: "teamId is required" });
     const team = await getTeam(teamId);
     if (!team) return res.status(404).json({ error: "Team not found" });
+
+    // Connection validation: You can only advertise teams led by your direct connections or yourself
+    if (team.leaderUSN !== currentUsn) {
+      const isConnected = await areConnected(currentUsn, team.leaderUSN);
+      if (!isConnected) {
+        return res
+          .status(403)
+          .json({ error: "You can only advertise requirements led by your direct connections." });
+      }
+    }
+
     const ad = await advertiseTeam(currentUsn, team.id);
     if (!ad)
       return res.status(409).json({ error: "Already advertising this team" });

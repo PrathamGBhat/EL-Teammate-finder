@@ -121,6 +121,7 @@ async function discover(usn, branch) {
       teamId: team.id,
       contactUSN: team.leaderUSN,
       contactName: leader ? leader.name : team.leaderUSN,
+      contactPhone: team.contactPhone || "",
       requiredBranch: team.requiredBranch,
       membersNeeded: team.membersNeeded,
       foundThroughUSN: ad.advertiserUSN,
