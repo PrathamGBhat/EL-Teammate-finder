@@ -5,6 +5,7 @@ const UserSchema = new mongoose.Schema({
   name: { type: String, required: true },
   branch: { type: String, required: true },
   passwordHash: { type: String, required: true },
+  isAdmin: { type: Boolean, default: false },
 });
 
 module.exports = mongoose.models.User || mongoose.model("User", UserSchema);

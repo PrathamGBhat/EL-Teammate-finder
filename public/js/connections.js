@@ -15,40 +15,54 @@
   }
 
   let searchDebounce;
+  let activeQuery = "";
+
   searchInput.addEventListener("input", () => {
     clearTimeout(searchDebounce);
     const q = searchInput.value.trim();
+    activeQuery = q;
     searchResults.innerHTML = "";
     showConnectMsg("");
     if (!q) return;
+
     searchDebounce = setTimeout(async () => {
-      const { users } = await Api.get(`/api/users?q=${encodeURIComponent(q)}`);
-      if (users.length === 0) {
-        searchResults.appendChild(el(`<div class="empty">No matching USNs.</div>`));
-        return;
-      }
-      users.forEach((u) => {
-        const row = el(`
-          <div class="card row">
-            <div>
-              <span class="usn">${u.usn}</span> — ${u.name} (${u.branch})
+      try {
+        const { users } = await Api.get(`/api/users?q=${encodeURIComponent(q)}`);
+        // Race condition guard: discard if user updated search box in the meantime
+        if (activeQuery !== q) return;
+
+        searchResults.innerHTML = "";
+        if (users.length === 0) {
+          searchResults.appendChild(el(`<div class="empty">No USNs matching "${q}".</div>`));
+          return;
+        }
+        users.forEach((u) => {
+          const row = el(`
+            <div class="card row">
+              <div>
+                <span class="usn">${u.usn}</span> — ${u.name} (${u.branch})
+              </div>
+              <button data-usn="${u.usn}">Connect</button>
             </div>
-            <button data-usn="${u.usn}">Connect</button>
-          </div>
-        `);
-        row.querySelector("button").addEventListener("click", async (e) => {
-          e.target.disabled = true;
-          try {
-            await Api.post("/api/connections/request", { to: u.usn });
-            showConnectMsg(`Request sent to ${u.usn}.`, false);
-            e.target.textContent = "Requested";
-          } catch (err) {
-            showConnectMsg(err.message, true);
-            e.target.disabled = false;
-          }
+          `);
+          row.querySelector("button").addEventListener("click", async (e) => {
+            e.target.disabled = true;
+            try {
+              await Api.post("/api/connections/request", { to: u.usn });
+              showConnectMsg(`Request sent to ${u.usn}.`, false);
+              e.target.textContent = "Requested";
+            } catch (err) {
+              showConnectMsg(err.message, true);
+              e.target.disabled = false;
+            }
+          });
+          searchResults.appendChild(row);
         });
-        searchResults.appendChild(row);
-      });
+      } catch (err) {
+        if (activeQuery === q) {
+          searchResults.innerHTML = `<div class="error-msg">${err.message}</div>`;
+        }
+      }
     }, 250);
   });
 

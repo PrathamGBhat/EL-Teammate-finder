@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Admin Panel — TeamFinder</title>
+<link rel="stylesheet" href="/css/style.css" />
+<style>
+  .admin-badge {
+    background: rgba(91, 141, 239, 0.2);
+    color: var(--accent);
+    padding: 2px 8px;
+    border-radius: 4px;
+    font-size: 12px;
+    font-weight: 600;
+  }
+  .modal-backdrop {
+    position: fixed;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background: rgba(0, 0, 0, 0.75);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+  }
+  .modal-card {
+    width: 100%;
+    max-width: 440px;
+    background: var(--panel);
+    border: 1px solid var(--panel-border);
+    border-radius: var(--radius);
+    padding: 24px;
+  }
+  .action-btns {
+    display: flex;
+    gap: 8px;
+  }
+</style>
+</head>
+<body>
+<main>
+  <div style="display:flex; align-items:center; gap:10px; margin-bottom:6px;">
+    <h1>Admin Panel</h1>
+    <span class="admin-badge">System Administrator</span>
+  </div>
+  <p class="sub">Full CRUD database management for user accounts and administrator role assignment.</p>
+
+  <!-- Create User Card -->
+  <h2>Add New User</h2>
+  <div class="card">
+    <label for="newUsn">USN</label>
+    <input id="newUsn" placeholder="e.g. 1RV25CS131" />
+
+    <label for="newName">Full Name</label>
+    <input id="newName" placeholder="e.g. Admin User" />
+
+    <label for="newBranch">Branch</label>
+    <select id="newBranch">
+      <option value="" disabled selected>Select Branch</option>
+      <option value="CSE">CSE</option>
+      <option value="CD">CD</option>
+      <option value="CY">CY</option>
+      <option value="CI">CI</option>
+      <option value="ISE">ISE</option>
+      <option value="BT">BT</option>
+      <option value="EC">EC</option>
+      <option value="EE">EE</option>
+      <option value="ET">ET</option>
+      <option value="CV">CV</option>
+      <option value="ME">ME</option>
+      <option value="ASE">ASE</option>
+      <option value="IM">IM</option>
+    </select>
+
+    <label for="newPassword">Password</label>
+    <input id="newPassword" type="password" placeholder="Min 6 characters" />
+
+    <label style="display:flex; align-items:center; gap:8px; cursor:pointer; margin-bottom:16px;">
+      <input type="checkbox" id="newIsAdmin" style="width:auto; margin:0;" />
+      <span>Make Admin (Grant full administrative privileges)</span>
+    </label>
+
+    <div id="createMsg"></div>
+    <button id="createUserBtn">Create User Account</button>
+  </div>
+
+  <!-- User List Section -->
+  <h2>User Directory</h2>
+  <div class="card">
+    <label for="searchUsn">Filter Users</label>
+    <input id="searchUsn" placeholder="Search by USN, Name, or Branch..." />
+  </div>
+
+  <div id="userList"></div>
+
+  <!-- Edit User Modal (hidden by default) -->
+  <div id="editModal" class="modal-backdrop" style="display:none;">
+    <div class="modal-card">
+      <h2 style="margin-top:0;">Edit User Account</h2>
+      <p class="sub">Editing USN: <strong id="editUsnDisplay" class="usn"></strong></p>
+
+      <label for="editName">Full Name</label>
+      <input id="editName" />
+
+      <label for="editBranch">Branch</label>
+      <select id="editBranch">
+        <option value="CSE">CSE</option>
+        <option value="CD">CD</option>
+        <option value="CY">CY</option>
+        <option value="CI">CI</option>
+        <option value="ISE">ISE</option>
+        <option value="BT">BT</option>
+        <option value="EC">EC</option>
+        <option value="EE">EE</option>
+        <option value="ET">ET</option>
+        <option value="CV">CV</option>
+        <option value="ME">ME</option>
+        <option value="ASE">ASE</option>
+        <option value="IM">IM</option>
+      </select>
+
+      <label for="editPassword">New Password (leave blank to keep unchanged)</label>
+      <input id="editPassword" type="password" placeholder="••••••••" />
+
+      <label style="display:flex; align-items:center; gap:8px; cursor:pointer; margin-bottom:16px;">
+        <input type="checkbox" id="editIsAdmin" style="width:auto; margin:0;" />
+        <span>Admin Privileges</span>
+      </label>
+
+      <div id="editMsg"></div>
+
+      <div style="display:flex; justify-content:flex-end; gap:10px; margin-top:12px;">
+        <button id="cancelEditBtn" class="secondary">Cancel</button>
+        <button id="saveEditBtn">Save Changes</button>
+      </div>
+    </div>
+  </div>
+</main>
+
+<script src="/js/common.js"></script>
+<script src="/js/admin.js"></script>
+</body>
+</html>

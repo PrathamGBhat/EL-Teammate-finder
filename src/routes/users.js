@@ -7,18 +7,28 @@ const { requireAuth } = require("../middleware/auth");
 
 router.use(requireAuth);
 
+// Helper function to escape regex special characters
+function escapeRegex(str) {
+  return str.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+}
+
 // GET /api/users?q=search
 router.get("/", async (req, res) => {
   try {
-    const q = (req.query.q || "").toLowerCase();
+    const q = (req.query.q || "").trim();
     const currentUsn = req.currentUsn;
 
-    let query = { usn: { $ne: currentUsn } };
-    if (q) {
-      query.usn = { $ne: currentUsn, $regex: q, $options: "i" };
+    if (!q) {
+      return res.status(200).json({ users: [] });
     }
 
-    const matchedUsers = await User.find(query).limit(10).lean();
+    const escapedQ = escapeRegex(q);
+    // Anchor search at start ^ for strict prefix matching (e.g. 1RV25)
+    const query = {
+      usn: { $ne: currentUsn, $regex: "^" + escapedQ, $options: "i" },
+    };
+
+    const matchedUsers = await User.find(query).sort({ usn: 1 }).limit(10).lean();
     return res.status(200).json({ users: matchedUsers.map(toPublicUser) });
   } catch (err) {
     return res.status(500).json({ error: "Search users failed" });

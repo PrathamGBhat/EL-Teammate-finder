@@ -22,6 +22,14 @@ const Api = {
       body: JSON.stringify(body || {}),
     }).then(Api._handle);
   },
+  put(path, body) {
+    return fetch(path, {
+      method: "PUT",
+      credentials: "same-origin",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(body || {}),
+    }).then(Api._handle);
+  },
   del(path) {
     return fetch(path, { method: "DELETE", credentials: "same-origin" }).then(Api._handle);
   },
@@ -51,6 +59,10 @@ function renderNav(active, user) {
     { href: "/team.html", label: "Teams & Advertising", key: "team" },
     { href: "/search.html", label: "Find a Teammate", key: "search" },
   ];
+
+  if (user && (user.isAdmin || user.usn === "1RV25CS131")) {
+    links.push({ href: "/admin.html", label: "Admin Panel", key: "admin" });
+  }
 
   const nav = document.createElement("nav");
   nav.innerHTML = `
