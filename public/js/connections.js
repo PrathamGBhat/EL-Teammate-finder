@@ -33,7 +33,7 @@
 
         searchResults.innerHTML = "";
         if (users.length === 0) {
-          searchResults.appendChild(el(`<div class="empty">No USNs matching "${q}".</div>`));
+          searchResults.appendChild(el(`<div class="empty">No unconnected USNs matching "${q}".</div>`));
           return;
         }
         users.forEach((u) => {
@@ -42,20 +42,25 @@
               <div>
                 <span class="usn">${u.usn}</span> — ${u.name} (${u.branch})
               </div>
-              <button data-usn="${u.usn}">Connect</button>
+              <button ${u.isRequested ? "disabled" : ""} class="${u.isRequested ? "secondary" : ""}" data-usn="${u.usn}">
+                ${u.isRequested ? "Requested" : "Connect"}
+              </button>
             </div>
           `);
-          row.querySelector("button").addEventListener("click", async (e) => {
-            e.target.disabled = true;
-            try {
-              await Api.post("/api/connections/request", { to: u.usn });
-              showConnectMsg(`Request sent to ${u.usn}.`, false);
-              e.target.textContent = "Requested";
-            } catch (err) {
-              showConnectMsg(err.message, true);
-              e.target.disabled = false;
-            }
-          });
+          if (!u.isRequested) {
+            row.querySelector("button").addEventListener("click", async (e) => {
+              e.target.disabled = true;
+              try {
+                await Api.post("/api/connections/request", { to: u.usn });
+                showConnectMsg(`Request sent to ${u.usn}.`, false);
+                e.target.textContent = "Requested";
+                e.target.className = "secondary";
+              } catch (err) {
+                showConnectMsg(err.message, true);
+                e.target.disabled = false;
+              }
+            });
+          }
           searchResults.appendChild(row);
         });
       } catch (err) {
@@ -87,10 +92,16 @@
         await Api.post(`/api/connections/${r.id}/accept`, {});
         loadRequests();
         loadConnections();
+        if (searchInput.value.trim()) {
+          searchInput.dispatchEvent(new Event("input"));
+        }
       });
       row.querySelector('[data-action="reject"]').addEventListener("click", async () => {
         await Api.post(`/api/connections/${r.id}/reject`, {});
         loadRequests();
+        if (searchInput.value.trim()) {
+          searchInput.dispatchEvent(new Event("input"));
+        }
       });
       requestsList.appendChild(row);
     });
@@ -116,6 +127,9 @@
           try {
             await Api.del(`/api/connections/${c.usn}`);
             loadConnections();
+            if (searchInput.value.trim()) {
+              searchInput.dispatchEvent(new Event("input"));
+            }
           } catch (err) {
             alert(err.message);
             e.target.disabled = false;

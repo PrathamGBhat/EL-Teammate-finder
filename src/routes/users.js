@@ -1,7 +1,8 @@
 const express = require("express");
 const router = express.Router();
 const User = require("../db/models/User");
-const { getUser } = require("../db/access");
+const ConnectionRequest = require("../db/models/ConnectionRequest");
+const { getUser, getConnectionsOf } = require("../db/access");
 const { hashPassword, toPublicUser } = require("../utils/auth");
 const { requireAuth } = require("../middleware/auth");
 
@@ -23,13 +24,34 @@ router.get("/", async (req, res) => {
     }
 
     const escapedQ = escapeRegex(q);
-    // Anchor search at start ^ for strict prefix matching (e.g. 1RV25)
+
+    // Fetch existing connections & pending outgoing requests
+    const [connections, pendingRequests] = await Promise.all([
+      getConnectionsOf(currentUsn),
+      ConnectionRequest.find({ from: currentUsn, status: "PENDING" }).lean(),
+    ]);
+
+    const connectedUsns = new Set(connections.map((c) => c.usn));
+    const requestedUsns = new Set(pendingRequests.map((r) => r.to));
+
+    // Exclude current user & already connected users from search
     const query = {
-      usn: { $ne: currentUsn, $regex: "^" + escapedQ, $options: "i" },
+      usn: {
+        $ne: currentUsn,
+        $nin: Array.from(connectedUsns),
+        $regex: "^" + escapedQ,
+        $options: "i",
+      },
     };
 
     const matchedUsers = await User.find(query).sort({ usn: 1 }).limit(10).lean();
-    return res.status(200).json({ users: matchedUsers.map(toPublicUser) });
+
+    const results = matchedUsers.map((u) => ({
+      ...toPublicUser(u),
+      isRequested: requestedUsns.has(u.usn),
+    }));
+
+    return res.status(200).json({ users: results });
   } catch (err) {
     return res.status(500).json({ error: "Search users failed" });
   }
