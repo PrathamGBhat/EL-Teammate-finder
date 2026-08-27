@@ -56,8 +56,9 @@ function renderNav(active, user) {
   const links = [
     { href: "/profile.html", label: "Profile", key: "profile" },
     { href: "/connections.html", label: "Connections", key: "connections" },
-    { href: "/team.html", label: "Teams & Advertising", key: "team" },
-    { href: "/search.html", label: "Find a Teammate", key: "search" },
+    { href: "/advertising.html", label: "Advertising", key: "advertising" },
+    { href: "/teams.html", label: "Teams", key: "teams" },
+    { href: "/search.html", label: "Find Vacant Spots", key: "search" },
     { href: "/credits.html", label: "Credits", key: "credits" },
   ];
 
@@ -93,4 +94,51 @@ function el(html) {
   const t = document.createElement("template");
   t.innerHTML = html.trim();
   return t.content.firstChild;
+}
+
+function showDescriptionModal(teamId, leaderText, requiredBranches, description) {
+  let modal = document.getElementById("descModal");
+  if (!modal) {
+    modal = el(`
+      <div id="descModal" class="modal-backdrop" style="display:none;">
+        <div class="modal-card">
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
+            <h2 style="margin:0; font-size:17px;" id="descModalTitle">Team Requirement Details</h2>
+            <button type="button" id="closeDescModalBtn" class="secondary" style="padding:4px 10px; font-size:16px;">&times;</button>
+          </div>
+          <p class="sub" style="margin-bottom:12px;" id="descModalSub"></p>
+          <div class="card" style="background:#0d0f14; margin-bottom:0; font-size:14px; line-height:1.5; word-wrap:break-word;" id="descModalBody"></div>
+        </div>
+      </div>
+    `);
+    document.body.appendChild(modal);
+    document.getElementById("closeDescModalBtn").addEventListener("click", () => {
+      modal.style.display = "none";
+    });
+    modal.addEventListener("click", (e) => {
+      if (e.target === modal) modal.style.display = "none";
+    });
+  }
+
+  const branchesArray = Array.isArray(requiredBranches)
+    ? requiredBranches
+    : [requiredBranches || "ANY"];
+
+  const branchPills = branchesArray
+    .map((b) => `<span class="pill open" style="margin-right:4px;">${b}</span>`)
+    .join(" ");
+
+  document.getElementById("descModalTitle").textContent = `Team #${teamId} Details`;
+  document.getElementById("descModalSub").innerHTML = leaderText;
+  document.getElementById("descModalBody").innerHTML = `
+    <div style="margin-bottom:12px;">
+      <label style="color:var(--muted); font-size:12px; margin-bottom:4px;">Required Branch(es)</label>
+      <div>${branchPills}</div>
+    </div>
+    <div>
+      <label style="color:var(--muted); font-size:12px; margin-bottom:4px;">Requirement Description</label>
+      <div style="color:var(--text); font-size:14px;">${description ? description.replace(/</g, "&lt;").replace(/>/g, "&gt;") : "<em>No description provided.</em>"}</div>
+    </div>
+  `;
+  modal.style.display = "flex";
 }

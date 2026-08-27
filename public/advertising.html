@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Advertising — TeamFinder</title>
+<link rel="stylesheet" href="/css/style.css" />
+</head>
+<body>
+<main>
+  <h1>Team Advertisements</h1>
+  <p class="sub">Create a requirement if your team needs teammates. Advertise open requirements led by your direct connections so your network can discover them.</p>
+
+  <h2>Create a team requirement</h2>
+  <div class="card">
+    <label for="membersNeeded">Number of teammates needed</label>
+    <input id="membersNeeded" type="number" min="1" max="10" value="1" />
+
+    <div id="branchDropdownsContainer"></div>
+
+    <label for="contactPhone">Contact Phone Number (Optional)</label>
+    <input id="contactPhone" type="tel" placeholder="e.g. +91 9876543210 (optional)" />
+
+    <label for="description">Requirement Description (Optional, max 100 characters)</label>
+    <input id="description" maxlength="100" placeholder="e.g. Need a frontend dev experienced with React & CSS (optional)" />
+
+    <div id="createMsg"></div>
+    <button id="createTeamBtn">Create requirement</button>
+  </div>
+
+  <h2>Teams you lead</h2>
+  <div id="myTeams"></div>
+
+  <h2>Open requirements from your connections</h2>
+  <p class="sub" style="margin-top:-8px;">Shows open requirements led by people you are directly connected with. Advertising references the original team under your profile so your friends can discover it in search.</p>
+  <div id="openTeams"></div>
+</main>
+
+<script src="/js/common.js"></script>
+<script src="/js/advertising.js"></script>
+</body>
+</html>

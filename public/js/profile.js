@@ -91,12 +91,17 @@
     advertisements.forEach((ad) => {
       const t = ad.team;
       if (!t) return;
+      const leaderNameStr = t.leaderName && t.leaderName !== t.leaderUSN ? ` (${t.leaderName})` : "";
       const phoneMarkup = t.contactPhone ? ` · 📞 <strong>${t.contactPhone}</strong>` : "";
+      const branches = t.requiredBranches && t.requiredBranches.length > 0
+        ? t.requiredBranches
+        : [t.requiredBranch || "ANY"];
+      const infoBtnHtml = `<button class="info-btn" data-action="info" title="View Details">ℹ️</button>`;
+
       const row = el(`
         <div class="card row">
           <div>
-            <div>Team #${t.id} · needs <strong>${t.requiredBranch}</strong> · led by
-              <span class="usn">${t.leaderUSN}</span>${phoneMarkup}</div>
+            <div>Team #${t.id}${infoBtnHtml} · led by <span class="usn">${t.leaderUSN}</span>${leaderNameStr}${phoneMarkup}</div>
             <div class="found-through">${t.membersNeeded} spot(s) needed</div>
           </div>
           <div style="display:flex; align-items:center; gap:10px;">
@@ -105,6 +110,12 @@
           </div>
         </div>
       `);
+
+      row.querySelector('[data-action="info"]').addEventListener("click", () => {
+        const leaderText = `Led by <span class="usn">${t.leaderUSN}</span>${leaderNameStr}`;
+        showDescriptionModal(t.id, leaderText, branches, t.description);
+      });
+
       row.querySelector('[data-action="remove"]').addEventListener("click", async (e) => {
         e.target.disabled = true;
         try {

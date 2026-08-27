@@ -3,18 +3,18 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>Find a Teammate — TeamFinder</title>
+<title>Find Vacant Spots — TeamFinder</title>
 <link rel="stylesheet" href="/css/style.css" />
 </head>
 <body>
 <main>
-  <h1>Find a teammate</h1>
-  <p class="sub">Searches through <em>your connections'</em> advertisements — not the whole platform.</p>
+  <h1>Find Vacant Team Spots</h1>
+  <p class="sub">Find open team requirements matching your target branch advertised across your connection network.</p>
 
   <div class="card">
-    <label for="branchInput">Desired branch</label>
-    <select id="branchInput">
-      <option value="" disabled selected>Select Desired Branch</option>
+    <label for="branchInput">Target Branch</label>
+    <select id="branchInput" style="margin-bottom:0;">
+      <option value="" disabled selected>Select Target Branch</option>
       <option value="CSE">CSE</option>
       <option value="CD">CD</option>
       <option value="CY">CY</option>
@@ -29,10 +29,9 @@
       <option value="ASE">ASE</option>
       <option value="IM">IM</option>
     </select>
-    <button id="searchBtn">Search</button>
   </div>
 
-  <h2>Results</h2>
+  <h2>Vacant Spot Results</h2>
   <div id="results"></div>
 </main>
 

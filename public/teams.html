@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Teams — TeamFinder</title>
+<link rel="stylesheet" href="/css/style.css" />
+</head>
+<body>
+<main>
+  <h1>Teams Directory</h1>
+  <p class="sub">Browse open team requirements. Switch between teams advertised by your direct connections and the global platform list.</p>
+
+  <div class="card">
+    <label for="scopeFilter">View Filter</label>
+    <select id="scopeFilter" style="margin-bottom:0;">
+      <option value="network" selected>Teams Advertised by Direct Connections</option>
+      <option value="global">Global List of Teams (All Open Teams)</option>
+    </select>
+  </div>
+
+  <h2>Open Teams</h2>
+  <div id="teamsList"></div>
+</main>
+
+<script src="/js/common.js"></script>
+<script src="/js/teams_directory.js"></script>
+</body>
+</html>

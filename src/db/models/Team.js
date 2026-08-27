@@ -3,11 +3,13 @@ const mongoose = require("mongoose");
 const TeamSchema = new mongoose.Schema({
   id: { type: Number, required: true, unique: true, index: true },
   leaderUSN: { type: String, required: true },
-  requiredBranch: { type: String, required: true },
+  requiredBranch: { type: String, default: "" },
+  requiredBranches: { type: [String], default: [] },
   membersNeeded: { type: Number, required: true },
   members: { type: [String], default: [] },
   status: { type: String, enum: ["OPEN", "COMPLETE"], default: "OPEN" },
   contactPhone: { type: String, default: "" },
+  description: { type: String, default: "" },
 });
 
 module.exports = mongoose.models.Team || mongoose.model("Team", TeamSchema);

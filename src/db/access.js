@@ -46,7 +46,17 @@ async function getAdvertisementsOf(usn) {
   if (ads.length === 0) return [];
   const teamIds = ads.map((ad) => ad.teamId);
   const teams = await Team.find({ id: { $in: teamIds } }).lean();
-  const teamMap = new Map(teams.map((t) => [t.id, t]));
+
+  const leaderUSNs = [...new Set(teams.map((t) => t.leaderUSN))];
+  const users = await User.find({ usn: { $in: leaderUSNs } }).lean();
+  const userMap = new Map(users.map((u) => [u.usn, u.name]));
+
+  const teamsWithLeaderName = teams.map((t) => ({
+    ...t,
+    leaderName: userMap.get(t.leaderUSN) || t.leaderUSN,
+  }));
+
+  const teamMap = new Map(teamsWithLeaderName.map((t) => [t.id, t]));
   return ads.map((ad) => ({ ...ad, team: teamMap.get(ad.teamId) || null }));
 }
 
@@ -94,7 +104,10 @@ async function discover(usn, branch) {
   const teams = await Team.find({
     id: { $in: teamIds },
     status: "OPEN",
-    requiredBranch: branch,
+    $or: [
+      { requiredBranches: branch },
+      { requiredBranch: branch },
+    ],
   }).lean();
   if (teams.length === 0) return [];
 
@@ -116,14 +129,19 @@ async function discover(usn, branch) {
 
     const leader = userMap.get(team.leaderUSN);
     const connUser = userMap.get(ad.advertiserUSN);
+    const branches = (team.requiredBranches && team.requiredBranches.length > 0)
+      ? team.requiredBranches
+      : [team.requiredBranch || "ANY"];
 
     results.push({
       teamId: team.id,
       contactUSN: team.leaderUSN,
       contactName: leader ? leader.name : team.leaderUSN,
       contactPhone: team.contactPhone || "",
-      requiredBranch: team.requiredBranch,
-      membersNeeded: team.membersNeeded,
+      description: team.description || "",
+      requiredBranches: branches,
+      requiredBranch: branches[0],
+      membersNeeded: team.membersNeeded || branches.length,
       foundThroughUSN: ad.advertiserUSN,
       foundThroughName: connUser ? connUser.name : ad.advertiserUSN,
     });
