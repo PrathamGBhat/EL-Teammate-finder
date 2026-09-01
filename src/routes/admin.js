@@ -6,6 +6,7 @@ const Connection = require("../db/models/Connection");
 const ConnectionRequest = require("../db/models/ConnectionRequest");
 const Team = require("../db/models/Team");
 const Advertisement = require("../db/models/Advertisement");
+const Config = require("../db/models/Config");
 const { hashPassword, toPublicUser } = require("../utils/auth");
 const { requireAdmin } = require("../middleware/auth");
 
@@ -186,6 +187,37 @@ router.delete("/teams/:id", async (req, res) => {
     return res.status(200).json({ deleted: true, teamId });
   } catch (err) {
     return res.status(500).json({ error: "Failed to delete team requirement" });
+  }
+});
+
+// GET /api/admin/config
+router.get("/config", async (req, res) => {
+  try {
+    const doc = await Config.findOne({ key: "latestPassingYear" }).lean();
+    const latestPassingYear = doc && typeof doc.value === "number" ? doc.value : 2029;
+    return res.status(200).json({ latestPassingYear });
+  } catch (err) {
+    return res.status(500).json({ error: "Failed to fetch config" });
+  }
+});
+
+// PUT /api/admin/config
+router.put("/config", async (req, res) => {
+  try {
+    const { latestPassingYear } = req.body || {};
+    const yearNum = Number(latestPassingYear);
+    if (isNaN(yearNum) || yearNum < 2026 || yearNum > 2100) {
+      return res.status(400).json({ error: "Invalid latest passing year. Must be between 2026 and 2100." });
+    }
+
+    const doc = await Config.findOneAndUpdate(
+      { key: "latestPassingYear" },
+      { value: yearNum },
+      { upsert: true, returnDocument: "after" }
+    );
+    return res.status(200).json({ latestPassingYear: doc.value });
+  } catch (err) {
+    return res.status(500).json({ error: "Failed to update config" });
   }
 });
 

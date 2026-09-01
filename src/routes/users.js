@@ -57,6 +57,38 @@ router.get("/", async (req, res) => {
   }
 });
 
+const ALLOWED_BRANCHES = ["CSE", "CD", "CY", "CI", "CH", "ISE", "BT", "EC", "EE", "ET", "CV", "ME", "ASE", "IM"];
+
+// PUT /api/users/me (Update name & branch)
+router.put("/me", async (req, res) => {
+  try {
+    const currentUsn = req.currentUsn;
+    let { name, branch } = req.body || {};
+    name = (name || "").trim();
+    branch = (branch || "").trim().toUpperCase();
+
+    if (!name) {
+      return res.status(400).json({ error: "Name is required" });
+    }
+    if (!branch || !ALLOWED_BRANCHES.includes(branch)) {
+      return res.status(400).json({ error: "Invalid branch selected" });
+    }
+
+    const user = await User.findOne({ usn: currentUsn });
+    if (!user) {
+      return res.status(404).json({ error: "User not found" });
+    }
+
+    user.name = name;
+    user.branch = branch;
+    await user.save();
+
+    return res.status(200).json({ user: toPublicUser(user) });
+  } catch (err) {
+    return res.status(500).json({ error: "Failed to update profile details" });
+  }
+});
+
 // PUT /api/users/me/password (Change password for logged-in user)
 router.put("/me/password", async (req, res) => {
   try {

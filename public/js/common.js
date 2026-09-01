@@ -52,6 +52,46 @@ async function initPage(active) {
   return user;
 }
 
+function getUserBatch(usn) {
+  if (!usn) return "ALL";
+  const m = String(usn).match(/^1[A-Z0-9]{2}(\d{2})/i);
+  return (m && m[1]) ? m[1] : "ALL";
+}
+
+async function populatePassingYearDropdown(selectEl, userUsn) {
+  if (!selectEl) return;
+  let latestPassingYear = 2029;
+  try {
+    const res = await Api.get("/api/config");
+    if (res && typeof res.latestPassingYear === "number") {
+      latestPassingYear = res.latestPassingYear;
+    }
+  } catch (err) { }
+
+  const userBatch = getUserBatch(userUsn);
+
+  selectEl.innerHTML = "";
+  for (let year = latestPassingYear; year >= 2026; year--) {
+    const batchCode = String(year - 2004);
+    const opt = document.createElement("option");
+    opt.value = batchCode;
+    opt.textContent = String(year);
+    selectEl.appendChild(opt);
+  }
+
+  if (userBatch !== "ALL" && !Array.from(selectEl.options).some((opt) => opt.value === userBatch)) {
+    const userYear = 2004 + Number(userBatch);
+    const opt = document.createElement("option");
+    opt.value = userBatch;
+    opt.textContent = String(userYear);
+    selectEl.appendChild(opt);
+  }
+
+  if (Array.from(selectEl.options).some((opt) => opt.value === userBatch)) {
+    selectEl.value = userBatch;
+  }
+}
+
 function renderNav(active, user) {
   const links = [
     { href: "/profile.html", label: "Profile", key: "profile" },
@@ -84,7 +124,8 @@ function renderNav(active, user) {
   if (logoutBtn) {
     logoutBtn.addEventListener("click", async () => {
       sessionStorage.removeItem("current_pwd");
-      await Api.post("/api/logout", {}).catch(() => {});
+      localStorage.removeItem("current_pwd");
+      await Api.post("/api/logout", {}).catch(() => { });
       window.location.href = "/index.html";
     });
   }

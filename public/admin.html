@@ -45,6 +45,16 @@
   </div>
   <p class="sub">Full CRUD database management for user accounts and global team requirements.</p>
 
+  <!-- System Settings Card -->
+  <h2>System Settings &amp; Graduation Batches</h2>
+  <div class="card">
+    <label for="latestPassingYearInput">Latest Graduation Batch Year</label>
+    <input id="latestPassingYearInput" type="number" min="2026" max="2100" placeholder="e.g. 2029 or 2030" />
+    <p class="sub" style="margin-top:-6px;">Sets the latest graduation year option available in the Passing Year filter across Search and Teams Directory. Dropdowns will render options from this year down to 2026.</p>
+    <div id="configMsg"></div>
+    <button id="saveConfigBtn">Save System Settings</button>
+  </div>
+
   <!-- Create User Card -->
   <h2>Add New User</h2>
   <div class="card">
@@ -61,6 +71,7 @@
       <option value="CD">CD</option>
       <option value="CY">CY</option>
       <option value="CI">CI</option>
+      <option value="CH">CH</option>
       <option value="ISE">ISE</option>
       <option value="BT">BT</option>
       <option value="EC">EC</option>
@@ -120,6 +131,7 @@
         <option value="CD">CD</option>
         <option value="CY">CY</option>
         <option value="CI">CI</option>
+        <option value="CH">CH</option>
         <option value="ISE">ISE</option>
         <option value="BT">BT</option>
         <option value="EC">EC</option>

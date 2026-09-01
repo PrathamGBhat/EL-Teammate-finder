@@ -5,6 +5,45 @@
   document.getElementById("name").textContent = user.name;
   document.getElementById("sub").innerHTML = `<span class="usn">${user.usn}</span> · ${user.branch}`;
 
+  // Pre-fill Edit Profile Details form
+  const profileNameInput = document.getElementById("profileName");
+  const profileBranchSelect = document.getElementById("profileBranch");
+  const updateProfileBtn = document.getElementById("updateProfileBtn");
+  const updateProfileMsg = document.getElementById("updateProfileMsg");
+
+  if (profileNameInput) profileNameInput.value = user.name || "";
+  if (profileBranchSelect && user.branch) profileBranchSelect.value = user.branch;
+
+  function showProfileMsg(text, isError) {
+    if (updateProfileMsg) {
+      updateProfileMsg.innerHTML = text
+        ? `<div class="${isError ? "error-msg" : "success-msg"}">${text}</div>`
+        : "";
+    }
+  }
+
+  if (updateProfileBtn) {
+    updateProfileBtn.addEventListener("click", async () => {
+      const name = profileNameInput ? profileNameInput.value.trim() : "";
+      const branch = profileBranchSelect ? profileBranchSelect.value.trim().toUpperCase() : "";
+
+      if (!name) return showProfileMsg("Please enter your name.", true);
+      if (!branch) return showProfileMsg("Please select your branch.", true);
+
+      updateProfileBtn.disabled = true;
+      try {
+        const { user: updatedUser } = await Api.put("/api/users/me", { name, branch });
+        document.getElementById("name").textContent = updatedUser.name;
+        document.getElementById("sub").innerHTML = `<span class="usn">${updatedUser.usn}</span> · ${updatedUser.branch}`;
+        showProfileMsg("Profile details updated successfully!", false);
+      } catch (err) {
+        showProfileMsg(err.message, true);
+      } finally {
+        updateProfileBtn.disabled = false;
+      }
+    });
+  }
+
   const currentPasswordInput = document.getElementById("currentPassword");
   const toggleCurrentPasswordBtn = document.getElementById("toggleCurrentPasswordBtn");
   if (toggleCurrentPasswordBtn && currentPasswordInput) {
@@ -25,7 +64,7 @@
     });
   }
 
-  const savedPwd = sessionStorage.getItem("current_pwd");
+  const savedPwd = localStorage.getItem("current_pwd") || sessionStorage.getItem("current_pwd");
   if (savedPwd && currentPasswordInput) {
     currentPasswordInput.value = savedPwd;
   }
@@ -57,6 +96,7 @@
         await Api.put("/api/users/me/password", { currentPassword, newPassword });
         showMsg("Password updated successfully!", false);
         sessionStorage.setItem("current_pwd", newPassword);
+        localStorage.setItem("current_pwd", newPassword);
         currentPasswordInput.value = newPassword;
         newPasswordInput.value = "";
       } catch (err) {
@@ -101,12 +141,13 @@
       const row = el(`
         <div class="card row">
           <div>
-            <div>Team #${t.id}${infoBtnHtml} · led by <span class="usn">${t.leaderUSN}</span>${leaderNameStr}${phoneMarkup}</div>
+            <div>Team #${t.id} · led by <span class="usn">${t.leaderUSN}</span>${leaderNameStr}${phoneMarkup}</div>
             <div class="found-through">${t.membersNeeded} spot(s) needed</div>
           </div>
           <div style="display:flex; align-items:center; gap:10px;">
             <span class="pill ${t.status === "OPEN" ? "open" : "complete"}">${t.status}</span>
             <button class="danger" data-action="remove">Remove</button>
+            ${infoBtnHtml}
           </div>
         </div>
       `);

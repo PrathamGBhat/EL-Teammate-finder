@@ -238,6 +238,8 @@ button:disabled { opacity: 0.5; cursor: not-allowed; }
   border-color: var(--accent);
 }
 
+.card.row .info-btn { margin-left: 0; }
+
 .modal-backdrop {
   position: fixed;
   top: 0;

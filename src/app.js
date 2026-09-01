@@ -11,6 +11,7 @@ const teamsRoutes = require("./routes/teams");
 const advertisementsRoutes = require("./routes/advertisements");
 const searchRoutes = require("./routes/search");
 const adminRoutes = require("./routes/admin");
+const configRoutes = require("./routes/config");
 
 const app = express();
 
@@ -43,6 +44,7 @@ app.use("/api/teams", teamsRoutes);
 app.use("/api/advertisements", advertisementsRoutes);
 app.use("/api/search", searchRoutes);
 app.use("/api/admin", adminRoutes);
+app.use("/api/config", configRoutes);
 
 // Fallback for unmatched API routes
 app.use("/api/*", (req, res) => {

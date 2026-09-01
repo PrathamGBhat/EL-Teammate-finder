@@ -89,7 +89,7 @@ async function deleteAdvertisement(adId) {
  *   current user -> their connections -> those connections'
  *   advertisements -> open teams matching branch -> relevant USNs
  */
-async function discover(usn, branch) {
+async function discover(usn, branch, batch) {
   const myConnectionsPublic = await getConnectionsOf(usn);
   const myConnectionUSNs = myConnectionsPublic.map((u) => u.usn);
 
@@ -101,14 +101,19 @@ async function discover(usn, branch) {
   if (ads.length === 0) return [];
 
   const teamIds = [...new Set(ads.map((ad) => ad.teamId))];
-  const teams = await Team.find({
+  const teamsQuery = {
     id: { $in: teamIds },
     status: "OPEN",
     $or: [
       { requiredBranches: branch },
       { requiredBranch: branch },
     ],
-  }).lean();
+  };
+  if (batch && batch !== "ALL") {
+    teamsQuery.leaderUSN = new RegExp(`^1[A-Z0-9]{2}${batch}`, "i");
+  }
+
+  const teams = await Team.find(teamsQuery).lean();
   if (teams.length === 0) return [];
 
   const teamMap = new Map(teams.map((t) => [t.id, t]));
@@ -149,6 +154,51 @@ async function discover(usn, branch) {
   return results;
 }
 
+/**
+ * GLOBAL DISCOVERY — find all OPEN teams matching a branch across the
+ * whole platform, regardless of the user's connections. Mirrors the Teams
+ * page's "global" scope. Returns the same result shape as `discover()`
+ * but without connection-derived `foundThrough*` info.
+ */
+async function discoverGlobal(branch, batch) {
+  const teamsQuery = {
+    status: "OPEN",
+    $or: [
+      { requiredBranches: branch },
+      { requiredBranch: branch },
+    ],
+  };
+  if (batch && batch !== "ALL") {
+    teamsQuery.leaderUSN = new RegExp(`^1[A-Z0-9]{2}${batch}`, "i");
+  }
+
+  const teams = await Team.find(teamsQuery).sort({ id: -1 }).lean();
+  if (teams.length === 0) return [];
+
+  const leaderUSNs = [...new Set(teams.map((t) => t.leaderUSN))];
+  const userProfiles = await User.find({ usn: { $in: leaderUSNs } }).lean();
+  const userMap = new Map(userProfiles.map((u) => [u.usn, u]));
+
+  return teams.map((team) => {
+    const leader = userMap.get(team.leaderUSN);
+    const branches = (team.requiredBranches && team.requiredBranches.length > 0)
+      ? team.requiredBranches
+      : [team.requiredBranch || "ANY"];
+    return {
+      teamId: team.id,
+      contactUSN: team.leaderUSN,
+      contactName: leader ? leader.name : team.leaderUSN,
+      contactPhone: team.contactPhone || "",
+      description: team.description || "",
+      requiredBranches: branches,
+      requiredBranch: branches[0],
+      membersNeeded: team.membersNeeded || branches.length,
+      foundThroughUSN: null,
+      foundThroughName: null,
+    };
+  });
+}
+
 module.exports = {
   getUser,
   areConnected,
@@ -158,4 +208,5 @@ module.exports = {
   advertiseTeam,
   deleteAdvertisement,
   discover,
+  discoverGlobal,
 };

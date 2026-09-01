@@ -11,7 +11,7 @@
   const myTeamsEl = document.getElementById("myTeams");
   const openTeamsEl = document.getElementById("openTeams");
 
-  const ALLOWED_BRANCHES = ["CSE", "CD", "CY", "CI", "ISE", "BT", "EC", "EE", "ET", "CV", "ME", "ASE", "IM"];
+  const ALLOWED_BRANCHES = ["CSE", "CD", "CY", "CI", "CH", "ISE", "BT", "EC", "EE", "ET", "CV", "ME", "ASE", "IM"];
 
   function renderBranchDropdowns() {
     const rawVal = parseInt(membersInput.value);
@@ -64,7 +64,7 @@
     }
 
     const contactPhone = phoneInput ? phoneInput.value.trim() : "";
-    const description = descInput ? descInput.value.trim().slice(0, 100) : "";
+    const description = descInput ? descInput.value.trim().slice(0, 200) : "";
 
     createBtn.disabled = true;
     try {
@@ -100,11 +100,12 @@
       const row = el(`
         <div class="card row">
           <div>
-            <div>Team #${t.id}${infoBtnHtml} · ${t.membersNeeded} spot(s) needed${phoneMarkup}</div>
+            <div>Team #${t.id} · ${t.membersNeeded} spot(s) needed${phoneMarkup}</div>
           </div>
           <div style="display:flex; align-items:center; gap:10px;">
             <span class="pill ${t.status === "OPEN" ? "open" : "complete"}">${t.status}</span>
             ${t.status === "OPEN" ? `<button data-action="complete" class="secondary">Mark complete</button>` : ""}
+            ${infoBtnHtml}
           </div>
         </div>
       `);
@@ -134,7 +135,7 @@
 
     openTeamsEl.innerHTML = "";
     if (teams.length === 0) {
-      openTeamsEl.appendChild(el(`<div class="empty">No open requirements from your connections yet.</div>`));
+      openTeamsEl.appendChild(el(`<div class="empty">No open requirements from your connections yet for the selected batch.</div>`));
       return;
     }
     teams.forEach((t) => {
@@ -150,12 +151,15 @@
       const row = el(`
         <div class="card row">
           <div>
-            <div>Team #${t.id}${infoBtnHtml} · led by <span class="usn">${t.leaderUSN}</span>${leaderNameStr}${phoneMarkup}</div>
+            <div>Team #${t.id} · led by <span class="usn">${t.leaderUSN}</span>${leaderNameStr}${phoneMarkup}</div>
             <div class="found-through">${t.membersNeeded} spot(s) needed</div>
           </div>
-          <button ${isMine ? "disabled" : ""} data-action="${myAdId ? "remove" : "advertise"}" class="${myAdId ? "danger" : ""}">
-            ${isMine ? "Your team" : myAdId ? "Remove" : "Advertise this"}
-          </button>
+          <div style="display:flex; align-items:center; gap:10px;">
+            <button ${isMine ? "disabled" : ""} data-action="${myAdId ? "remove" : "advertise"}" class="${myAdId ? "danger" : ""}">
+              ${isMine ? "Your team" : myAdId ? "Remove" : "Advertise this"}
+            </button>
+            ${infoBtnHtml}
+          </div>
         </div>
       `);
 

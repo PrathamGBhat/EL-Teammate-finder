@@ -60,6 +60,42 @@
       : "";
   }
 
+  // System Settings Config Handlers
+  const latestPassingYearInput = document.getElementById("latestPassingYearInput");
+  const configMsg = document.getElementById("configMsg");
+  const saveConfigBtn = document.getElementById("saveConfigBtn");
+
+  async function loadConfig() {
+    try {
+      const { latestPassingYear } = await Api.get("/api/admin/config");
+      if (latestPassingYearInput) {
+        latestPassingYearInput.value = latestPassingYear;
+      }
+    } catch (err) {
+      if (latestPassingYearInput) latestPassingYearInput.value = 2029;
+    }
+  }
+
+  if (saveConfigBtn && latestPassingYearInput) {
+    saveConfigBtn.addEventListener("click", async () => {
+      const val = parseInt(latestPassingYearInput.value);
+      if (isNaN(val) || val < 2026 || val > 2100) {
+        return showMsg(configMsg, "Please enter a valid graduation year (2026 - 2100).", true);
+      }
+      saveConfigBtn.disabled = true;
+      try {
+        await Api.put("/api/admin/config", { latestPassingYear: val });
+        showMsg(configMsg, `Settings saved! Latest graduation year set to ${val}.`, false);
+      } catch (err) {
+        showMsg(configMsg, err.message, true);
+      } finally {
+        saveConfigBtn.disabled = false;
+      }
+    });
+  }
+
+  loadConfig();
+
   // Create User
   createUserBtn.addEventListener("click", async () => {
     const usn = newUsnInput.value.trim().toUpperCase();

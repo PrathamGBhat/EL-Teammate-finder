@@ -9,7 +9,25 @@
 <body>
 <main>
   <h1>Find Vacant Team Spots</h1>
-  <p class="sub">Find open team requirements matching your target branch advertised across your connection network.</p>
+  <p class="sub">Find open team requirements matching your target branch across your connection network or the global platform list.</p>
+
+  <div class="card">
+    <label for="scopeFilter">View Filter</label>
+    <select id="scopeFilter" style="margin-bottom:0;">
+      <option value="network" selected>Spots among my connections</option>
+      <option value="global">Global list of vacant spots (all open teams)</option>
+    </select>
+  </div>
+
+  <div class="card">
+    <label for="batchInput">Passing Year</label>
+    <select id="batchInput" style="margin-bottom:0;">
+      <option value="25">2029</option>
+      <option value="24">2028</option>
+      <option value="23">2027</option>
+      <option value="22">2026</option>
+    </select>
+  </div>
 
   <div class="card">
     <label for="branchInput">Target Branch</label>
@@ -19,6 +37,7 @@
       <option value="CD">CD</option>
       <option value="CY">CY</option>
       <option value="CI">CI</option>
+      <option value="CH">CH</option>
       <option value="ISE">ISE</option>
       <option value="BT">BT</option>
       <option value="EC">EC</option>

@@ -29,6 +29,23 @@ router.get("/", async (req, res) => {
       // If scope === 'global', no leaderUSN filter is applied (returns all open teams)
     }
 
+    if (req.query.batch && req.query.batch !== "ALL") {
+      const batchRegex = new RegExp(`^1[A-Z0-9]{2}${req.query.batch}`, "i");
+      if (filter.leaderUSN) {
+        if (typeof filter.leaderUSN === "string") {
+          if (!batchRegex.test(filter.leaderUSN)) {
+            return res.status(200).json({ teams: [] });
+          }
+        } else if (filter.leaderUSN.$in) {
+          filter.leaderUSN = {
+            $in: filter.leaderUSN.$in.filter((u) => batchRegex.test(u)),
+          };
+        }
+      } else {
+        filter.leaderUSN = batchRegex;
+      }
+    }
+
     const list = await Team.find(filter).sort({ id: -1 }).lean();
     if (list.length === 0) return res.status(200).json({ teams: [] });
 
@@ -82,7 +99,7 @@ router.post("/", async (req, res) => {
       members: [currentUsn],
       status: "OPEN",
       contactPhone: String(contactPhone || "").trim(),
-      description: String(description || "").trim().slice(0, 100),
+      description: String(description || "").trim().slice(0, 200),
     });
 
     // Auto-advertise under the leader's own profile

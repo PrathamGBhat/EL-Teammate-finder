@@ -27,10 +27,15 @@ function showMsg(text) {
   msg.textContent = text || "";
 }
 
+const USN_REGEX = /^1(RV|RZ)\d{2}(CS|CD|CY|CI|CH|IS|BT|EC|EE|ET|CV|ME|AS|IM)\d{3}$/i;
+
 loginBtn.addEventListener("click", async () => {
   const usn = usnInput.value.trim().toUpperCase();
   const password = passwordInput.value;
   if (!usn || !password) return showMsg("Please enter your USN and password.");
+  if (!USN_REGEX.test(usn)) {
+    return showMsg("Invalid USN format. Example: 1RV25CS001 or 1RZ24EC042.");
+  }
 
   loginBtn.disabled = true;
   try {
@@ -46,6 +51,7 @@ loginBtn.addEventListener("click", async () => {
       await Api.post("/api/login", { usn, password });
     }
     sessionStorage.setItem("current_pwd", password);
+    localStorage.setItem("current_pwd", password);
     window.location.href = "/profile.html";
   } catch (err) {
     if (err.data && err.data.isNewUser) {
